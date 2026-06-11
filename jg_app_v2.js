@@ -215,10 +215,7 @@ function syncGamesRenderer() {
 
 window.toast = function(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200); }
 window.uiError = function(msg) { 
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed; top:20px; left:20px; right:20px; z-index:99999; background:var(--rose3); color:#fff; padding:20px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,0.4); font-family:sans-serif;';
-  div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;"><strong style="font-size:1.1rem;">🚨 Error Inesperado</strong><button onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;">✕</button></div><p style="font-size:0.95rem; line-height:1.4;">${msg}</p>`;
-  document.body.appendChild(div);
+  console.warn("UI Error silenced:", msg);
 }
 window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
 window.confirmReset = function() { document.getElementById('confirmModal').classList.add('open'); }

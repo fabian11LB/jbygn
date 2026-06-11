@@ -25,10 +25,9 @@ export async function fbSave(key, value) {
     await setDoc(REF, { [key]: JSON.stringify(value) }, { merge: true });
   } catch(e) { 
     console.error('Error guardando en Firebase:', e); 
+    // Silenciado visualmente por petición del usuario
     if (window.uiError) {
-      window.uiError('Error Firestore: No se pudo guardar. Si dice "Limit Exceeded" tu base de datos superó el 1MB. Borra fotos antiguas o libérala.');
-    } else {
-      alert('Error Firestore: No se pudo guardar. Limite de 1MB superado u otro error de red.');
+      window.uiError('Error Firestore: No se pudo guardar.');
     }
   }
 }
