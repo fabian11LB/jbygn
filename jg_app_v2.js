@@ -127,15 +127,17 @@ attachSync((data) => {
   const keys = Object.keys(data);
   let changed = false;
   keys.forEach(k => {
-    const remote = JSON.parse(data[k]);
+    // Gun.js nos da el dato directo o ya stringificado
+    let remoteRaw = data[k];
+    if (typeof remoteRaw !== 'string') return; // Ignorar metadatos de Gun
+    
     const local = localStorage.getItem('jg_v6_'+k);
-    if(JSON.stringify(remote) !== local) {
+    if(remoteRaw !== local) {
       try {
-        localStorage.setItem('jg_v6_'+k, data[k]);
-      } catch(e) {
-        console.warn("Memoria Local Llena en sync:", e);
-      }
-      State[k] = remote;
+        localStorage.setItem('jg_v6_'+k, remoteRaw);
+      } catch(e) {}
+      
+      State[k] = JSON.parse(remoteRaw);
       changed = true;
       if (k === 'wp') syncWpPlayerRemotely();
       if (k === 'presence') updatePresenceUI();
@@ -161,19 +163,15 @@ function updatePresenceUI() {
   }
 }
 
-window.showSyncError = function(msg) {
-  const el = document.getElementById('presence-dashboard-err');
-  if(!el) {
-    const board = document.getElementById('presence-board');
-    if(board) {
-      const errDiv = document.createElement('div');
-      errDiv.id = 'presence-dashboard-err';
-      errDiv.style = 'color: #ff3b30; font-size: 0.7rem; font-weight: 700; margin-top: 5px; width: 100%; text-align: center;';
-      board.appendChild(errDiv);
-      errDiv.innerHTML = '⚠️ ERROR: ' + msg;
-    }
+window.updateSyncIndicator = function(ok) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  if (ok) {
+    el.className = 'sync-indicator sync-ok';
+    el.innerHTML = '🟢 Sincronización Directa';
   } else {
-    el.innerHTML = '⚠️ ERROR: ' + msg;
+    el.className = 'sync-indicator sync-error';
+    el.innerHTML = '🔴 Buscando al otro...';
   }
 }
 

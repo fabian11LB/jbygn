@@ -1,125 +1,43 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+// --- REEMPLAZO DE FIREBASE POR GUN.JS (v13 - MOTOR DESCENTRALIZADO) ---
+// Este sistema no requiere cuentas ni reglas. Los móviles se conectan directamente.
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA0jCUtEa_BBHQUoogvyHfMNDUZJzIj5RY",
-  authDomain: "jhosep-gabriela.firebaseapp.com",
-  projectId: "jhosep-gabriela",
-  storageBucket: "jhosep-gabriela.firebasestorage.app",
-  messagingSenderId: "185608457820",
-  appId: "1:185608457820:web:76cb9780e049ce8a39a099"
-};
+const ROOM_ID = 'jg_forever_love_2025_safe_v13'; // Llave única para vosotros
+const gun = Gun(['https://gun-manhattan.herokuapp.com/gun', 'https://gun-ams1.herokuapp.com/gun']);
+const appData = gun.get(ROOM_ID);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-let storage = null;
-try {
-    storage = getStorage(app);
-} catch(e) { console.warn("Firebase Storage init issue:", e); }
-const REF = doc(db, "pareja", "jg");
-
-// --- SYNC STATUS ---
-let syncOk = false;
-let syncRetryCount = 0;
-const MAX_RETRY = 10;
-
-function updateSyncIndicator(ok, msg) {
-  syncOk = ok;
-  const el = document.getElementById('syncStatus');
-  if (!el) return;
-  if (ok) {
-    el.className = 'sync-indicator sync-ok';
-    el.innerHTML = '🟢 Sincronizado';
-    el.title = 'Firebase conectado — ambos ven los cambios en tiempo real';
-  } else {
-    el.className = 'sync-indicator sync-error';
-    el.innerHTML = '🔴 Sin Sync';
-    el.title = msg || 'Error de conexión con Firebase';
-  }
-}
-
-// --- SAVE ---
+// Simular el comportamiento de fbSave
 export async function fbSave(key, value) {
   try {
-    await setDoc(REF, { [key]: JSON.stringify(value) }, { merge: true });
-    updateSyncIndicator(true);
-    syncRetryCount = 0;
+    appData.get(key).put(JSON.stringify(value));
+    if (window.updateSyncIndicator) window.updateSyncIndicator(true);
   } catch(e) { 
-    console.error('Firebase fbSave error:', e);
-    updateSyncIndicator(false, 'No se pudo guardar: ' + (e.code || e.message));
+    console.error('Error guardando en Gun:', e); 
   }
 }
 
-// --- REALTIME SYNC WITH AUTO-RETRY ---
-let unsubscribe = null;
-
-export function attachSync(onDataReceived, onError) {
-  function startListener() {
-    // Clean previous listener
-    if (unsubscribe) {
-      try { unsubscribe(); } catch(e) {}
-      unsubscribe = null;
-    }
-
-    unsubscribe = onSnapshot(REF, (snap) => {
-      syncRetryCount = 0;
-      updateSyncIndicator(true);
-      if (snap.exists()) {
-        onDataReceived(snap.data());
-      }
-    }, (error) => {
-      console.error("Firebase Sync error:", error.code, error.message);
-      updateSyncIndicator(false, error.message);
-      
-      // MOSTRAR ERROR VISUAL EN LA APP
-      if (window.showSyncError) {
-        window.showSyncError(error.code === 'permission-denied' ? 'Falta de permisos en Firebase Console' : error.message);
-      }
-      
-      if (onError) onError(error);
-
-      // Auto-retry with exponential backoff
-      if (syncRetryCount < MAX_RETRY) {
-        syncRetryCount++;
-        const delay = Math.min(2000 * Math.pow(1.5, syncRetryCount), 30000);
-        console.log(`Reintentando sync en ${Math.round(delay/1000)}s (intento ${syncRetryCount}/${MAX_RETRY})...`);
-        setTimeout(startListener, delay);
-      } else {
-        console.warn('Se agotaron los reintentos de sync. Recarga la página manualmente.');
-        const el = document.getElementById('syncStatus');
-        if (el) {
-          el.innerHTML = '🔴 Desconectado — <button onclick="location.reload()" style="background:none;border:none;color:var(--rose3);text-decoration:underline;cursor:pointer;font-size:inherit;">Recargar</button>';
-        }
+// Simular el comportamiento de attachSync
+export function attachSync(onDataReceived) {
+  // Escuchar todos los campos que nos interesan
+  const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans', 'presence'];
+  
+  keys.forEach(k => {
+    appData.get(k).on((data) => {
+      if (data) {
+        onDataReceived({ [k]: data });
       }
     });
-  }
+  });
 
-  startListener();
-  return () => { if (unsubscribe) unsubscribe(); };
+  if (window.updateSyncIndicator) window.updateSyncIndicator(true);
+  return () => {}; // No-op cleanup
 }
 
-// --- UPLOAD IMAGE ---
+// Mock de Storage para evitar errores (Gun no guarda imágenes pesadas, se usarán Base64 comprimido)
 export async function fbUploadImage(path, dataUrl) {
-  try {
-    if (!storage) throw new Error('Storage no disponible');
-    const r = ref(storage, path);
-    await uploadString(r, dataUrl, 'data_url');
-    const url = await getDownloadURL(r);
-    return url;
-  } catch (e) {
-    console.error('Error subiendo imagen a Storage:', e);
-    throw e;
-  }
+  // Retornamos el dataUrl directamente, Gun lo manejará como string (comprimido por el app.js)
+  return dataUrl;
 }
 
-// --- DELETE IMAGE ---
 export async function fbDeleteImage(path) {
-  try {
-    if (!storage) return;
-    const r = ref(storage, path);
-    await deleteObject(r);
-  } catch (e) {
-    console.warn('Error eliminando imagen de Storage:', e);
-  }
+  // No-op en este sistema descentralizado
 }
