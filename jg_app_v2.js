@@ -192,12 +192,36 @@ setInterval(() => {
      if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) cTime = ytPlayer.getCurrentTime();
      else if (State.wp.type === 'mp4' && wpVideo) cTime = wpVideo.currentTime;
      
-     if (cTime > 0 && Math.abs(cTime - State.wp.time) > 2) {
+     if (cTime > 0 && Math.abs(cTime - State.wp.time) > 5) {
         State.wp.time = cTime;
         fbSave('wp', State.wp);
      }
   }
 }, 4000); 
+
+// === VIDEO LLAMADA J&G (v25) ===
+let jitsiApi = null;
+window.toggleJgCall = function() {
+  const container = document.getElementById('jgCallContainer');
+  if (container.style.display === 'none') {
+    container.style.display = 'block';
+    const domain = '8x8.vc';
+    const options = {
+      roomName: 'vpaas-magic-cookie-9ae8805f77894a8286a87796d11de793/' + SYNC_CONFIG.ROOM,
+      width: '100%',
+      height: '100%',
+      parentNode: document.getElementById('jgCallIframe'),
+      configOverwrite: { prejoinPageEnabled: false },
+      interfaceConfigOverwrite: { TILE_VIEW_MAX_COLUMNS: 2 },
+      userInfo: { displayName: State.me === 'J' ? 'Jhosep' : 'Gabriela' }
+    };
+    jitsiApi = new JitsiMeetExternalAPI(domain, options);
+    window.scrollTo({ top: container.offsetTop - 100, behavior: 'smooth' });
+  } else {
+    container.style.display = 'none';
+    if (jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
+  }
+}
 
 function updatePresenceUI() {
   const other = State.me === 'J' ? 'G' : 'J';
@@ -733,6 +757,11 @@ function renderCuaderno(query = '') {
           <div style="display:flex; gap:6px; flex-shrink:0; margin-left:10px;">
             <button class="btn btn-ghost btn-sm" onclick="editBookNote(${n.id})" style="padding:6px 10px;">✏️</button>
             <button class="btn btn-ghost btn-sm" onclick="deleteBookNote(${n.id})" style="padding:6px 10px;">🗑️</button>
+          </div>
+          <!-- LLAMADA J&G (v25) -->
+          <div id="jgCallContainer" style="display:none; width:100%; min-height:400px; background:#000; border-radius:14px; margin-top:20px; position:relative; overflow:hidden; border:2px solid var(--rose);">
+             <div id="jgCallIframe" style="width:100%; height:400px;"></div>
+             <button class="btn btn-ghost" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:30px; height:30px; padding:0; justify-content:center; display:flex; align-items:center;" onclick="toggleJgCall()"><i data-lucide="x" style="width:16px;"></i></button>
           </div>
         </div>
       </div>`;

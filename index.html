@@ -8,9 +8,10 @@
   <meta http-equiv="Expires" content="0">
   <title>J & G — Nuestra Historia</title>
   <!-- Cache busting and icon library -->
-  <link rel="stylesheet" href="jg_styles_v2.css?v=24">
+  <link rel="stylesheet" href="jg_styles_v2.css?v=25">
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src='https://8x8.vc/vpaas-magic-cookie-9ae8805f77894a8286a87796d11de793/external_api.js' async></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -137,8 +138,11 @@
     <!-- CINE (Embed Directo) -->
     <div id="sec-watchparty" class="sec">
       <div class="page-header">
-         <h2 class="sec-title" style="font-size:2.4rem; line-height:0.9;">Nuestro Cine 🍿</h2>
-         <p class="sec-sub">Peguen un link y véanlo juntos acá mismo</p>
+          <h2 class="sec-title" style="font-size:2.4rem; line-height:0.9;">Nuestro Cine 🍿</h2>
+          <div style="display:flex; justify-content:center; gap:10px; margin-top:8px;">
+            <p class="sec-sub">Véanlo juntos desde cualquier ciudad</p>
+            <button class="btn btn-ghost" style="padding:4px 10px; font-size:0.7rem; border-color:var(--rose3); color:var(--rose3);" onclick="toggleJgCall()"><i data-lucide="video"></i> Iniciar Llamada</button>
+          </div>
       </div>
       <div class="page-container wp-container">
          <div class="wp-link-area">
@@ -189,6 +193,11 @@
                  <input type="text" id="wpChatMsg" placeholder="Comenta la peli..." style="margin-bottom:0;" onkeypress="if(event.key==='Enter') sendWpChat()">
                  <button class="btn btn-sm btn-gold" onclick="sendWpChat()">Enviar</button>
                </div>
+            </div>
+            <!-- LLAMADA J&G (v25) -->
+            <div id="jgCallContainer" style="display:none; width:100%; min-height:400px; background:#000; border-radius:14px; margin-top:20px; position:relative; overflow:hidden; border:2px solid var(--rose);">
+               <div id="jgCallIframe" style="width:100%; height:400px;"></div>
+               <button class="btn btn-ghost" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:30px; height:30px; padding:0; justify-content:center; display:flex; align-items:center;" onclick="toggleJgCall()"><i data-lucide="x" style="width:16px;"></i></button>
             </div>
          </div>
       </div>
@@ -518,7 +527,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Lógica principal de JS -->
-<script type="module" src="jg_app_v2.js?v=24"></script>
+<script type="module" src="jg_app_v2.js?v=25"></script>
 <script>
   // Inicialización de Iconos Lucide
   lucide.createIcons();
