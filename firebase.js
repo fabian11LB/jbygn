@@ -1,58 +1,34 @@
-// --- MQTT GAME-LINK SYNC (v18 - MODO SIMULTÁNEO) ---
-// Este sistema es como un servidor de Minecraft. Transmisión pura y dura.
+// --- SHARED SERVER SYNC (v19 - MODO PERSISTENTE) ---
+// Este sistema usa Gun.js para que los datos estén "siempre ahí" (como un server de Minecraft).
 
-const BROKER = 'broker.emqx.io';
-const PORT = 8084; // WebSocket SSL
-const TOPIC = 'jbygn/v18/love_sync_secure';
-const CLIENT_ID = 'js_' + Math.random().toString(16).substr(2, 8);
+const ROOM_ID = 'jbygn_forever_server_v19_final';
+const gun = Gun(['https://gun-manhattan.herokuapp.com/gun', 'https://gun-ams1.herokuapp.com/gun']);
+const appData = gun.get(ROOM_ID);
 
-let client = null;
-let syncCallback = null;
-
-export function initMQTT() {
-    if (client) return;
-    client = new Paho.MQTT.Client(BROKER, PORT, CLIENT_ID);
-    
-    client.onConnectionLost = (resp) => {
-        console.warn('Conexión perdida, reconectando...', resp.errorMessage);
-        setTimeout(initMQTT, 2000);
-    };
-
-    client.onMessageArrived = (msg) => {
-        try {
-            const data = JSON.parse(msg.payloadString);
-            if (syncCallback) syncCallback(data);
-        } catch(e) {}
-    };
-
-    client.connect({
-        onSuccess: () => {
-            console.log('⚡ MODO SIMULTÁNEO ACTIVADO (MQTT)');
-            client.subscribe(TOPIC);
-            if (window.updateSyncIndicator) window.updateSyncIndicator(true);
-        },
-        useSSL: true,
-        onFailure: () => {
-            setTimeout(initMQTT, 3000);
-        }
-    });
+export function initSync() {
+    console.log('🏰 Servidor Conectado');
 }
 
 export async function fbSave(key, value) {
   // 1. Guardar local
   localStorage.setItem('jg_v6_'+key, JSON.stringify(value));
   
-  // 2. Transmitir instantáneamente
-  if (client && client.isConnected()) {
-    const message = new Paho.MQTT.Message(JSON.stringify({ [key]: JSON.stringify(value) }));
-    message.destinationName = TOPIC;
-    client.send(message);
-  }
+  // 2. Transmitir a la nube de Gun
+  appData.get(key).put(JSON.stringify(value));
 }
 
 export function attachSync(onDataReceived) {
-  syncCallback = onDataReceived;
-  initMQTT();
+  const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans', 'presence'];
+  
+  keys.forEach(k => {
+    appData.get(k).on((data) => {
+      if (data) {
+        onDataReceived({ [k]: data });
+      }
+    });
+  });
+
+  if (window.updateSyncIndicator) window.updateSyncIndicator(true);
   return () => {};
 }
 

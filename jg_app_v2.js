@@ -117,7 +117,6 @@ window.doLogin = function(who) {
   setTimeout(() => {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
-    if (window.initMQTT) window.initMQTT(); // Arrancar motor de juego
     startHeartbeat();
     refreshUI();
     updatePresenceUI();
