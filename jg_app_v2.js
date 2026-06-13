@@ -1,32 +1,33 @@
-// === MOTOR DE SINCRONIZACIÓN UNIFICADO (v20 - MODO MINECRAFT) ===
-const SYNC_CONFIG = {
-  ROOM: 'jbygn_server_2025_minecraft_v20',
-  PUSHER_KEY: '6b453e925d259c6d3765',
-  CLUSTER: 'us2'
+// === MOTOR FIREBASE MASTER (v22 - MODO MINECRAFT) ===
+const firebaseConfig = {
+  apiKey: "AIzaSyA0jCUtEa_BBHQUoogvyHfMNDUZJzIj5RY",
+  authDomain: "jhosep-gabriela.firebaseapp.com",
+  projectId: "jhosep-gabriela",
+  storageBucket: "jhosep-gabriela.firebasestorage.app",
+  messagingSenderId: "185608457820",
+  appId: "1:185608457820:web:76cb9780e049ce8a39a099"
 };
 
-// Gun para persistencia masiva (8 Relays globales)
-const gun = Gun([
-  'https://gun-manhattan.herokuapp.com/gun',
-  'https://gun-ams1.herokuapp.com/gun',
-  'https://gun-server.herokuapp.com/gun',
-  'https://relay.peer.ooo/gun',
-  'https://gun-usa.herokuapp.com/gun'
-]);
-const appData = gun.get(SYNC_CONFIG.ROOM);
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 export function fbSave(key, value) {
-  appData.get(key).put(JSON.stringify(value));
+  db.collection('pareja').doc(key).set({ 
+    val: JSON.stringify(value),
+    time: Date.now()
+  }, { merge: true });
 }
 
 export function attachSync(onDataReceived) {
-  const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans', 'presence'];
-  keys.forEach(k => {
-    appData.get(k).on((data, k_full) => { 
-      if(data){ 
-         onDataReceived({[k]:data}); 
-      } 
+  db.collection('pareja').onSnapshot(snap => {
+    snap.forEach(doc => {
+      onDataReceived({ [doc.id]: doc.data().val });
     });
+    if (window.updateSyncIndicator) window.updateSyncIndicator(true);
+  }, err => {
+    console.error("Error de sincronía:", err);
+    if (window.updateSyncIndicator) window.updateSyncIndicator(false);
   });
 }
 
