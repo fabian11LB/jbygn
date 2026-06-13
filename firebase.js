@@ -72,6 +72,11 @@ export function attachSync(onDataReceived, onError) {
       console.error("Firebase Sync error:", error.code, error.message);
       updateSyncIndicator(false, error.message);
       
+      // MOSTRAR ERROR VISUAL EN LA APP
+      if (window.showSyncError) {
+        window.showSyncError(error.code === 'permission-denied' ? 'Falta de permisos en Firebase Console' : error.message);
+      }
+      
       if (onError) onError(error);
 
       // Auto-retry with exponential backoff

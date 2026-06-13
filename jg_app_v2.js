@@ -161,6 +161,22 @@ function updatePresenceUI() {
   }
 }
 
+window.showSyncError = function(msg) {
+  const el = document.getElementById('presence-dashboard-err');
+  if(!el) {
+    const board = document.getElementById('presence-board');
+    if(board) {
+      const errDiv = document.createElement('div');
+      errDiv.id = 'presence-dashboard-err';
+      errDiv.style = 'color: #ff3b30; font-size: 0.7rem; font-weight: 700; margin-top: 5px; width: 100%; text-align: center;';
+      board.appendChild(errDiv);
+      errDiv.innerHTML = '⚠️ ERROR: ' + msg;
+    }
+  } else {
+    el.innerHTML = '⚠️ ERROR: ' + msg;
+  }
+}
+
 function startHeartbeat() {
   setInterval(() => {
     if (State.me) {
