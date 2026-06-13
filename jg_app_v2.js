@@ -1135,8 +1135,7 @@ function showWpEmbed() {
   } else if(State.wp.type === 'mp4') {
     wpVideo.style.display = 'block';
     if(wpVideo.src !== State.wp.embedSrc) wpVideo.src = State.wp.embedSrc;
-    // Sincronizar tiempo solo si el cambio es mayor a 10 segundos (cambio manual)
-    if(Math.abs(wpVideo.currentTime - State.wp.time) > 10) wpVideo.currentTime = State.wp.time;
+    // Sincronización de tiempo automática eliminada por completo. Solo manual.
     if(State.wp.playing) { wpVideo.play().catch(()=>{}); } else { wpVideo.pause(); }
   } else if(State.wp.type === 'yt-embed') {
     if (ytCont) ytCont.style.display = 'block';
@@ -1145,9 +1144,7 @@ function showWpEmbed() {
     } else {
         const currentYtId = getYtId(State.wp.url);
         if (rootYtIdMatches(ytPlayer.getVideoUrl(), currentYtId)) {
-            let cTime = ytPlayer.getCurrentTime && ytPlayer.getCurrentTime() || 0;
-            // Sincronizar tiempo solo si el cambio es mayor a 10 segundos (cambio manual)
-            if(Math.abs(cTime - State.wp.time) > 10) ytPlayer.seekTo(State.wp.time, true);
+            // Sincronización de tiempo automática eliminada por completo. Solo manual.
             if(State.wp.playing) ytPlayer.playVideo(); else ytPlayer.pauseVideo();
         } else {
             ytPlayer.loadVideoById(currentYtId, State.wp.time);
