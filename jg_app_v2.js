@@ -42,6 +42,7 @@ let State = {
   wp: S.g('wp') || { url: '', time: 0, playing: false, chat: [], ctrl: '', type: 'none', queue: [] },
   notasList: S.g('notasList') || [],
   plans: S.g('plans') || [],
+  presence: S.g('presence') || { J: 0, G: 0 },
   games: S.g('games') || { 
     ttt: { b: Array(9).fill(null), t: 'J', o: false },
     c4:  { b: Array(6).fill().map(()=>Array(7).fill(null)), t: 'J', o: false },
@@ -114,7 +115,9 @@ window.doLogin = function(who) {
   setTimeout(() => {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
+    startHeartbeat();
     refreshUI();
+    updatePresenceUI();
   }, 400);
 }
 
@@ -135,10 +138,37 @@ attachSync((data) => {
       State[k] = remote;
       changed = true;
       if (k === 'wp') syncWpPlayerRemotely();
+      if (k === 'presence') updatePresenceUI();
     }
   });
   if(changed && State.me) { refreshUI(); syncGamesRenderer(); }
 });
+
+function updatePresenceUI() {
+  const other = State.me === 'J' ? 'G' : 'J';
+  const otherName = other === 'J' ? 'Jhosep' : 'Gabriela';
+  const lastSeen = State.presence[other] || 0;
+  const now = Date.now();
+  const el = document.getElementById('presence-other');
+  if(!el) return;
+  
+  if (now - lastSeen < 45000) { // En línea si se vio hace menos de 45 seg
+    el.innerHTML = `${other==='J'?'🧔':'👩'} ${otherName}: <span style="color:var(--ios-green)">En línea</span>`;
+    document.getElementById('presence-sync-ic').style.animation = 'pulseSync 2s infinite';
+  } else {
+    el.innerHTML = `${other==='J'?'🧔':'👩'} ${otherName}: <span style="color:var(--muted)">Desconectado</span>`;
+    document.getElementById('presence-sync-ic').style.animation = 'none';
+  }
+}
+
+function startHeartbeat() {
+  setInterval(() => {
+    if (State.me) {
+      State.presence[State.me] = Date.now();
+      fbSave('presence', State.presence);
+    }
+  }, 20000); // Latido cada 20 segundos
+}
 
 function saveLocal(key, val) {
   isInternalSync = true;

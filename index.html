@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>J & G — Nuestra Historia</title>
   <!-- Cache busting and icon library -->
-  <link rel="stylesheet" href="jg_styles_v2.css?v=7">
+  <link rel="stylesheet" href="jg_styles_v2.css?v=11">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -94,6 +94,15 @@
     <!-- INICIO (Feed) -->
     <div id="sec-feed" class="sec active">
       <div class="page-container" style="padding-top:40px;">
+        <!-- PANEL DE ESTADO DE CONEXIÓN (NUEVO v11) -->
+        <div id="presence-board" class="card" style="padding:12px 20px; margin-bottom:20px; background:rgba(255,255,255,0.9); display:flex; justify-content:space-between; align-items:center; border:1px solid var(--gold); box-shadow:0 10px 30px rgba(212,175,55,0.15);">
+           <div style="display:flex; gap:15px; font-size:0.8rem; font-weight:600;">
+              <div id="presence-me">🧔 Tú: <span style="color:var(--ios-green)">En línea</span></div>
+              <div id="presence-other">👩 Gabriela: <span style="color:var(--text-light)">Cargando...</span></div>
+           </div>
+           <div id="presence-sync-ic" style="font-size:1.2rem; filter:drop-shadow(0 0 5px rgba(52,199,89,0.5));">📡</div>
+        </div>
+        
         <div class="card" style="text-align:center; padding: 40px 20px; background:linear-gradient(135deg, #fdf8f4, #fbf2ec); border-color:#eadbc8;">
            <h1 class="sec-title" style="font-size:3.5rem; margin-bottom: 2px;">J & G</h1>
            <p class="sec-sub" style="font-size: 1.1rem; letter-spacing: 0.5px;">Nuestra historia, un día a la vez</p>
@@ -505,7 +514,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Lógica principal de JS -->
-<script type="module" src="jg_app_v2.js?v=7"></script>
+<script type="module" src="jg_app_v2.js?v=11"></script>
 <script>
   // Inicialización de Iconos Lucide
   lucide.createIcons();
