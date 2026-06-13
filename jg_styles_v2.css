@@ -304,6 +304,19 @@ input[type="checkbox"]:checked::after { transform: translateX(20px); box-shadow:
 .snake-dpad-left { top: 50%; left: 0; transform: translateY(-50%); }
 .snake-dpad-right { top: 50%; right: 0; transform: translateY(-50%); }
 
+/* Sync Status Indicator */
+.sync-indicator {
+  text-align: center; font-size: 0.72rem; font-weight: 600; padding: 8px 14px;
+  border-radius: 12px; margin-bottom: 10px; transition: 0.3s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.sync-ok { background: rgba(52,199,89,0.1); color: #34c759; }
+.sync-error { background: rgba(255,59,48,0.1); color: #ff3b30; animation: pulseSync 2s infinite; }
+@keyframes pulseSync { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* Citas Grid */
+.citas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+
 /* Toasts */
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(40px); background: rgba(30,30,30,0.9); color: #fff; padding: 14px 24px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; z-index: 9999; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; pointer-events: none; backdrop-filter: blur(8px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
