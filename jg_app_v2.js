@@ -113,9 +113,11 @@ window.doLogin = function(who) {
   document.getElementById('composerNameLabel').textContent = who === 'J' ? 'Jhosep' : 'Gabriela';
   document.getElementById('composerAvatar').textContent = who === 'J' ? '🧔' : '👩';
   
+  // Forzar entrada visualmente
   setTimeout(() => {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
+    if (window.initMQTT) window.initMQTT(); // Arrancar motor de juego
     startHeartbeat();
     refreshUI();
     updatePresenceUI();
@@ -185,10 +187,10 @@ window.updateSyncIndicator = function(ok) {
   if (!el) return;
   if (ok) {
     el.className = 'sync-indicator sync-ok';
-    el.innerHTML = '🚀 Sincronía Vercel: LIVE';
+    el.innerHTML = '🏰 Servidor: Conectado';
   } else {
     el.className = 'sync-indicator sync-error';
-    el.innerHTML = '📡 Conectando con Gabriela...';
+    el.innerHTML = '📡 Conectando al Mundo...';
   }
 }
 

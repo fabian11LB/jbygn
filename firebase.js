@@ -1,53 +1,59 @@
-// --- PUSHER REAL-TIME RELAY (v17 - EL MOTOR DE VERCEL) ---
-// Este sistema garantiza que el Cine y el Chat sean simultáneos.
-// Usa Gun.js para guardar los datos y Pusher para el movimiento en vivo.
+// --- MQTT GAME-LINK SYNC (v18 - MODO SIMULTÁNEO) ---
+// Este sistema es como un servidor de Minecraft. Transmisión pura y dura.
 
-const PUSHER_KEY = '6b453e925d259c6d3765'; // Llave pública de alta velocidad
-const PUSHER_CLUSTER = 'us2';
-const ROOM_ID = 'jbygn_instant_sync_2025';
+const BROKER = 'broker.emqx.io';
+const PORT = 8084; // WebSocket SSL
+const TOPIC = 'jbygn/v18/love_sync_secure';
+const CLIENT_ID = 'js_' + Math.random().toString(16).substr(2, 8);
 
-let pusher = null;
-let channel = null;
+let client = null;
+let syncCallback = null;
 
-// Gun para persistencia
-const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-const appData = gun.get(ROOM_ID);
+export function initMQTT() {
+    if (client) return;
+    client = new Paho.MQTT.Client(BROKER, PORT, CLIENT_ID);
+    
+    client.onConnectionLost = (resp) => {
+        console.warn('Conexión perdida, reconectando...', resp.errorMessage);
+        setTimeout(initMQTT, 2000);
+    };
 
-export function initSync() {
-    if (pusher) return;
-    pusher = new Pusher(PUSHER_KEY, { cluster: PUSHER_CLUSTER });
-    channel = pusher.subscribe(ROOM_ID);
-    console.log('Pusher Conectado 📡');
+    client.onMessageArrived = (msg) => {
+        try {
+            const data = JSON.parse(msg.payloadString);
+            if (syncCallback) syncCallback(data);
+        } catch(e) {}
+    };
+
+    client.connect({
+        onSuccess: () => {
+            console.log('⚡ MODO SIMULTÁNEO ACTIVADO (MQTT)');
+            client.subscribe(TOPIC);
+            if (window.updateSyncIndicator) window.updateSyncIndicator(true);
+        },
+        useSSL: true,
+        onFailure: () => {
+            setTimeout(initMQTT, 3000);
+        }
+    });
 }
 
 export async function fbSave(key, value) {
-  // 1. Guardar en Gun (Nube lenta para datos guardados)
-  appData.get(key).put(JSON.stringify(value));
+  // 1. Guardar local
+  localStorage.setItem('jg_v6_'+key, JSON.stringify(value));
   
-  // 2. Avisar por Pusher (Nube rápida para simultaneidad)
-  if (channel) {
-    // Simulamos un evento de actualización instantánea
-    // (Nota: En un entorno real esto iría a un backend, aquí usamos el trigger de Gun como respaldo)
+  // 2. Transmitir instantáneamente
+  if (client && client.isConnected()) {
+    const message = new Paho.MQTT.Message(JSON.stringify({ [key]: JSON.stringify(value) }));
+    message.destinationName = TOPIC;
+    client.send(message);
   }
 }
 
 export function attachSync(onDataReceived) {
-  initSync();
-  
-  // Escuchamos a Gun.js para los cambios de datos
-  const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans', 'presence'];
-  keys.forEach(k => {
-    appData.get(k).on((data) => {
-      if (data) onDataReceived({ [k]: data });
-    });
-  });
-
-  // Escuchamos a Pusher para eventos críticos (Cine)
-  channel.bind('wp-event', (data) => {
-    if (data) onDataReceived({ wp: JSON.stringify(data) });
-  });
-
-  if (window.updateSyncIndicator) window.updateSyncIndicator(true);
+  syncCallback = onDataReceived;
+  initMQTT();
+  return () => {};
 }
 
 // Mock de imágenes
