@@ -1,8 +1,9 @@
-// === MOTOR FIREBASE MASTER (v22 - MODO MINECRAFT) ===
+// === MOTOR REALTIME DB MASTER (v23 - MODO MINECRAFT) ===
 const firebaseConfig = {
   apiKey: "AIzaSyA0jCUtEa_BBHQUoogvyHfMNDUZJzIj5RY",
   authDomain: "jhosep-gabriela.firebaseapp.com",
   projectId: "jhosep-gabriela",
+  databaseURL: "https://jhosep-gabriela-default-rtdb.firebaseio.com",
   storageBucket: "jhosep-gabriela.firebasestorage.app",
   messagingSenderId: "185608457820",
   appId: "1:185608457820:web:76cb9780e049ce8a39a099"
@@ -10,23 +11,23 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.database();
 
 export function fbSave(key, value) {
-  db.collection('pareja').doc(key).set({ 
-    val: JSON.stringify(value),
-    time: Date.now()
-  }, { merge: true });
+  db.ref('pareja/' + key).set(JSON.stringify(value));
 }
 
 export function attachSync(onDataReceived) {
-  db.collection('pareja').onSnapshot(snap => {
-    snap.forEach(doc => {
-      onDataReceived({ [doc.id]: doc.data().val });
-    });
+  db.ref('pareja').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+      Object.keys(data).forEach(k => {
+        onDataReceived({ [k]: data[k] });
+      });
+    }
     if (window.updateSyncIndicator) window.updateSyncIndicator(true);
   }, err => {
-    console.error("Error de sincronía:", err);
+    console.error("Error RTDB:", err);
     if (window.updateSyncIndicator) window.updateSyncIndicator(false);
   });
 }
