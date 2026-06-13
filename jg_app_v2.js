@@ -1,4 +1,4 @@
-import { fbSave, attachSync, fbUploadImage, fbDeleteImage } from './firebase.js';
+import { fbSave, attachSync, fbUploadImage, fbDeleteImage, initP2P } from './firebase.js';
 
 // --- CACHE & QUOTA CLEANUP ---
 try {
@@ -108,6 +108,8 @@ let activeDreamTab = 'todo';
 // === LOGIN Y ARRANQUE ===
 window.doLogin = function(who) {
   State.me = who;
+  localStorage.setItem('jg_v6_me', who); // Persistir para P2P
+  initP2P(who); // Iniciar Línea Directa
   document.getElementById('login-screen').style.opacity = '0';
   document.getElementById('composerNameLabel').textContent = who === 'J' ? 'Jhosep' : 'Gabriela';
   document.getElementById('composerAvatar').textContent = who === 'J' ? '🧔' : '👩';
@@ -184,10 +186,10 @@ window.updateSyncIndicator = function(ok) {
   if (!el) return;
   if (ok) {
     el.className = 'sync-indicator sync-ok';
-    el.innerHTML = '🟢 Sincronización Directa';
+    el.innerHTML = '⚡ Línea Directa: Conectado';
   } else {
     el.className = 'sync-indicator sync-error';
-    el.innerHTML = '🔴 Buscando al otro...';
+    el.innerHTML = '📡 Línea Directa: Buscando...';
   }
 }
 

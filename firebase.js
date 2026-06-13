@@ -1,43 +1,99 @@
-// --- REEMPLAZO DE FIREBASE POR GUN.JS (v13 - MOTOR DESCENTRALIZADO) ---
-// Este sistema no requiere cuentas ni reglas. Los móviles se conectan directamente.
+// --- PEER-TO-PEER DIRECT SYNC (v15 - CONEXIÓN DIRECTA) ---
+// Este sistema no usa servidores centrales. Conecta Jhosep y Gabriela punto a punto.
 
-const ROOM_ID = 'jg_forever_love_2025_safe_v13'; // Llave única para vosotros
-const gun = Gun(['https://gun-manhattan.herokuapp.com/gun', 'https://gun-ams1.herokuapp.com/gun']);
-const appData = gun.get(ROOM_ID);
+let peer = null;
+let conn = null;
+const MY_ID = 'jbygn-' + (localStorage.getItem('jg_v6_me') || 'anon') + '-2025';
+const OTHER_ID = 'jbygn-' + (localStorage.getItem('jg_v6_me') === 'J' ? 'G' : 'J') + '-2025';
 
-// Simular el comportamiento de fbSave
-export async function fbSave(key, value) {
-  try {
-    appData.get(key).put(JSON.stringify(value));
+let onDataCallback = null;
+
+export function initP2P(role) {
+  const myPeerId = 'jbygn-' + role + '-2025';
+  const otherPeerId = 'jbygn-' + (role === 'J' ? 'G' : 'J') + '-2025';
+  
+  if (peer) return;
+  
+  peer = new Peer(myPeerId);
+  
+  peer.on('open', (id) => {
+    console.log('Mi ID P2P es:', id);
+    if (window.updateSyncIndicator) window.updateSyncIndicator(false);
+    
+    // Intentar conectar con el otro cada 5 segundos
+    setInterval(() => {
+      if (!conn || !conn.open) {
+        connectToOther(otherPeerId);
+      }
+    }, 5000);
+  });
+  
+  peer.on('connection', (c) => {
+    setupConnection(c);
+  });
+
+  peer.on('error', (err) => {
+    console.warn('Error P2P:', err.type);
+    if (err.type === 'peer-unavailable') {
+        // El otro no está conectado aún
+    }
+  });
+}
+
+function connectToOther(id) {
+  console.log('Buscando a la otra mitad...', id);
+  const c = peer.connect(id, { reliable: true });
+  setupConnection(c);
+}
+
+function setupConnection(c) {
+  if (conn && conn.open) return;
+  conn = c;
+  
+  conn.on('open', () => {
+    console.log('¡CONECTADOS DIRECTAMENTE! ⚡');
     if (window.updateSyncIndicator) window.updateSyncIndicator(true);
-  } catch(e) { 
-    console.error('Error guardando en Gun:', e); 
+    toast('⚡ Línea Directa con tu pareja establecida');
+    
+    // Al conectar, enviamos nuestra versión de los datos local para sincronizar
+    syncAllLocal();
+  });
+  
+  conn.on('data', (data) => {
+    if (onDataCallback) onDataCallback(data);
+  });
+  
+  conn.on('close', () => {
+    if (window.updateSyncIndicator) window.updateSyncIndicator(false);
+    conn = null;
+  });
+}
+
+function syncAllLocal() {
+    const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans'];
+    keys.forEach(k => {
+        const val = localStorage.getItem('jg_v6_' + k);
+        if (val) fbSave(k, JSON.parse(val));
+    });
+}
+
+export async function fbSave(key, value) {
+  // 1. Guardar local (siempre)
+  localStorage.setItem('jg_v6_'+key, JSON.stringify(value));
+  
+  // 2. Enviar por P2P si hay conexión
+  if (conn && conn.open) {
+    conn.send({ [key]: JSON.stringify(value) });
   }
 }
 
-// Simular el comportamiento de attachSync
 export function attachSync(onDataReceived) {
-  // Escuchar todos los campos que nos interesan
-  const keys = ['citas', 'cuaderno', 'posts', 'fechas', 'dreams', 'songs', 'carta', 'places', 'scores', 'moods', 'wp', 'notasList', 'plans', 'presence'];
-  
-  keys.forEach(k => {
-    appData.get(k).on((data) => {
-      if (data) {
-        onDataReceived({ [k]: data });
-      }
-    });
-  });
-
-  if (window.updateSyncIndicator) window.updateSyncIndicator(true);
-  return () => {}; // No-op cleanup
+  onDataCallback = onDataReceived;
+  return () => {};
 }
 
-// Mock de Storage para evitar errores (Gun no guarda imágenes pesadas, se usarán Base64 comprimido)
+// Mock de imágenes (Base64 local)
 export async function fbUploadImage(path, dataUrl) {
-  // Retornamos el dataUrl directamente, Gun lo manejará como string (comprimido por el app.js)
   return dataUrl;
 }
-
-export async function fbDeleteImage(path) {
-  // No-op en este sistema descentralizado
-}
+export async function fbDeleteImage(path) {}
