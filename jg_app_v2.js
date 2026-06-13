@@ -191,9 +191,11 @@ let wpSyncLock = false;
 function getMyCtrlName() { return State.me === 'J' ? 'Jhosep' : 'Gabriela'; }
 function amIController() { return State.wp.ctrl === getMyCtrlName(); }
 
-// WATCH PARTY AGGRESSIVE SYNC (only controller broadcasts)
+// ELIMINADO: Sincronización agresiva deshabilitada para evitar saltos por lag
+// Solo se sincronizará cuando el controlador haga una acción manual (Play/Pause/Seek)
+/*
 setInterval(() => {
-  if (wpSyncLock) return; // Never broadcast during a sync lock
+  if (wpSyncLock) return; 
   if (State.me && State.wp.type !== 'none' && amIController()) {
      let cTime = 0;
      if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) cTime = ytPlayer.getCurrentTime();
@@ -205,7 +207,7 @@ setInterval(() => {
      }
   }
 }, 4000); 
-
+*/
 // === VIDEO LLAMADA J&G (v25) ===
 let jitsiApi = null;
 window.toggleJgCall = function() {
@@ -1133,7 +1135,8 @@ function showWpEmbed() {
   } else if(State.wp.type === 'mp4') {
     wpVideo.style.display = 'block';
     if(wpVideo.src !== State.wp.embedSrc) wpVideo.src = State.wp.embedSrc;
-    if(Math.abs(wpVideo.currentTime - State.wp.time) > 1.5) wpVideo.currentTime = State.wp.time;
+    // Sincronizar tiempo solo si el cambio es mayor a 10 segundos (cambio manual)
+    if(Math.abs(wpVideo.currentTime - State.wp.time) > 10) wpVideo.currentTime = State.wp.time;
     if(State.wp.playing) { wpVideo.play().catch(()=>{}); } else { wpVideo.pause(); }
   } else if(State.wp.type === 'yt-embed') {
     if (ytCont) ytCont.style.display = 'block';
@@ -1143,7 +1146,8 @@ function showWpEmbed() {
         const currentYtId = getYtId(State.wp.url);
         if (rootYtIdMatches(ytPlayer.getVideoUrl(), currentYtId)) {
             let cTime = ytPlayer.getCurrentTime && ytPlayer.getCurrentTime() || 0;
-            if(Math.abs(cTime - State.wp.time) > 1.5) ytPlayer.seekTo(State.wp.time, true);
+            // Sincronizar tiempo solo si el cambio es mayor a 10 segundos (cambio manual)
+            if(Math.abs(cTime - State.wp.time) > 10) ytPlayer.seekTo(State.wp.time, true);
             if(State.wp.playing) ytPlayer.playVideo(); else ytPlayer.pauseVideo();
         } else {
             ytPlayer.loadVideoById(currentYtId, State.wp.time);
