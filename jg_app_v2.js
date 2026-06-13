@@ -185,14 +185,21 @@ attachSync((data) => {
   if(changed && State.me) { refreshUI(); syncGamesRenderer(); }
 });
 
-// WATCH PARTY AGGRESSIVE SYNC
+// === WATCH PARTY SYNC LOCK SYSTEM ===
+// Prevents event listeners from broadcasting changes during remote sync
+let wpSyncLock = false;
+function getMyCtrlName() { return State.me === 'J' ? 'Jhosep' : 'Gabriela'; }
+function amIController() { return State.wp.ctrl === getMyCtrlName(); }
+
+// WATCH PARTY AGGRESSIVE SYNC (only controller broadcasts)
 setInterval(() => {
-  if (State.me && State.wp.type !== 'none' && State.wp.ctrl === (State.me==='J'?'Jhosep':'Gabriela')) {
+  if (wpSyncLock) return; // Never broadcast during a sync lock
+  if (State.me && State.wp.type !== 'none' && amIController()) {
      let cTime = 0;
      if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) cTime = ytPlayer.getCurrentTime();
      else if (State.wp.type === 'mp4' && wpVideo) cTime = wpVideo.currentTime;
      
-     if (cTime > 0 && Math.abs(cTime - State.wp.time) > 5) {
+     if (cTime > 0 && Math.abs(cTime - State.wp.time) > 3) {
         State.wp.time = cTime;
         fbSave('wp', State.wp);
      }
@@ -899,16 +906,17 @@ function onYtReady(event) {
 }
 
 function onYtStateChange(event) {
-  if (isInternalSync) return;
+  // CRITICAL: Block ALL outgoing events during sync lock or internal sync
+  if (isInternalSync || wpSyncLock) return;
+  // Only broadcast if I AM the controller (prevents the bounce-back loop)
+  if (!amIController()) return;
   if (event.data === YT.PlayerState.PLAYING) {
     State.wp.playing = true;
     State.wp.time = ytPlayer.getCurrentTime();
-    State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela';
     saveLocal('wp', State.wp);
   } else if (event.data === YT.PlayerState.PAUSED) {
     State.wp.playing = false;
     State.wp.time = ytPlayer.getCurrentTime();
-    State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela';
     saveLocal('wp', State.wp);
   } else if (event.data === YT.PlayerState.ENDED) {
     if (State.wp.queue && State.wp.queue.length > 0) {
@@ -921,19 +929,22 @@ function onYtStateChange(event) {
 const wpVideo = document.getElementById('wpVideo');
 if(wpVideo) {
   wpVideo.addEventListener('play', () => {
-    if(isInternalSync) return;
+    if(isInternalSync || wpSyncLock) return;
+    if (!amIController()) return; // Only controller broadcasts
     State.wp.playing = true; State.wp.time = wpVideo.currentTime; 
-    State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela'; saveLocal('wp', State.wp);
+    saveLocal('wp', State.wp);
   });
   wpVideo.addEventListener('pause', () => {
-    if(isInternalSync) return;
+    if(isInternalSync || wpSyncLock) return;
+    if (!amIController()) return;
     State.wp.playing = false; State.wp.time = wpVideo.currentTime; 
-    State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela'; saveLocal('wp', State.wp);
+    saveLocal('wp', State.wp);
   });
   wpVideo.addEventListener('seeked', () => {
-    if(isInternalSync) return;
+    if(isInternalSync || wpSyncLock) return;
+    if (!amIController()) return;
     State.wp.time = wpVideo.currentTime; 
-    State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela'; saveLocal('wp', State.wp);
+    saveLocal('wp', State.wp);
   });
   wpVideo.addEventListener('ended', () => {
     if (State.wp.queue && State.wp.queue.length > 0) {
@@ -969,7 +980,7 @@ window.loadWpVideo = function() {
   State.wp.url = url;
   State.wp.embedSrc = result.src;
   State.wp.type = result.type;
-  State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela';
+  State.wp.ctrl = getMyCtrlName();
   State.wp.time = 0; 
   State.wp.playing = false;
   S.s('wp', State.wp);
@@ -990,8 +1001,23 @@ window.clearWpLink = function() {
   showWpEmbed();
 }
 
+// "Tomar Control" - Explicit control takeover
+window.takeWpControl = function() {
+  State.wp.ctrl = getMyCtrlName();
+  if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) {
+      State.wp.time = ytPlayer.getCurrentTime();
+      State.wp.playing = ytPlayer.getPlayerState() === 1;
+  } else if (State.wp.type === 'mp4' && wpVideo) {
+      State.wp.time = wpVideo.currentTime;
+      State.wp.playing = !wpVideo.paused;
+  }
+  saveLocal('wp', State.wp);
+  toast(`🎬 ${getMyCtrlName()} tiene el control del Cine`);
+  updateWpControlUI();
+}
+
 window.syncWpNow = function() {
-  State.wp.ctrl = State.me === 'J' ? 'Jhosep' : 'Gabriela';
+  State.wp.ctrl = getMyCtrlName();
   if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) {
       State.wp.time = ytPlayer.getCurrentTime();
       State.wp.playing = ytPlayer.getPlayerState() === 1;
@@ -1001,6 +1027,32 @@ window.syncWpNow = function() {
   }
   saveLocal('wp', State.wp);
   toast(`Sincronizado forzado por ${State.wp.ctrl} 📡`);
+  updateWpControlUI();
+}
+
+// Update the control UI to show who has control and enable/disable the take control button
+function updateWpControlUI() {
+  const st = document.getElementById('wpStatusLabel');
+  const takeBtn = document.getElementById('wpTakeCtrlBtn');
+  const ctrlName = State.wp.ctrl || 'Nadie';
+  
+  if(st) {
+    if (amIController()) {
+      st.innerHTML = `<span style="color:var(--ios-green)">🎬 Tú controlas</span>`;
+    } else if (ctrlName !== 'Nadie') {
+      st.innerHTML = `<span style="color:var(--gold2)">🔒 ${ctrlName} controla</span>`;
+    } else {
+      st.textContent = 'Controlado por: Nadie';
+    }
+  }
+  
+  if(takeBtn) {
+    if (amIController()) {
+      takeBtn.style.display = 'none';
+    } else {
+      takeBtn.style.display = 'inline-flex';
+    }
+  }
 }
 
 window.addToWpQueue = function() {
@@ -1072,7 +1124,9 @@ function showWpEmbed() {
   if(ytCont) ytCont.style.display = 'none';
   ph.style.display = 'none';
 
+  // CRITICAL: Set BOTH locks to prevent event listener bounce-back
   isInternalSync = true;
+  wpSyncLock = true;
 
   if(!State.wp.type || State.wp.type === 'none' || !State.wp.embedSrc) {
     ph.style.display = 'flex';
@@ -1102,11 +1156,11 @@ function showWpEmbed() {
     if(embed.src !== State.wp.embedSrc) embed.src = State.wp.embedSrc;
   }
 
-  const st = document.getElementById('wpStatusLabel');
-  if(st) st.textContent = 'Controlado por: ' + (State.wp.ctrl || 'Nadie');
-  
+  updateWpControlUI();
   renderWpQueue();
-  setTimeout(() => { isInternalSync = false; }, 800);
+  
+  // Release locks after player has settled (2 seconds to be safe)
+  setTimeout(() => { isInternalSync = false; wpSyncLock = false; }, 2000);
 }
 
 function rootYtIdMatches(url, id) {
@@ -1114,7 +1168,18 @@ function rootYtIdMatches(url, id) {
    return url.includes(id);
 }
 
-function syncWpPlayerRemotely() { showWpEmbed(); }
+function syncWpPlayerRemotely() {
+  // Si YO soy el controlador, NO reubicar mi video (yo soy la fuente de verdad)
+  if (amIController()) {
+    // Solo actualizar el label y la cola, nunca seekear mi propio video
+    updateWpControlUI();
+    renderWpQueue();
+    return;
+  }
+  // Si el OTRO es el controlador, sí sincronizar mi reproductor con su tiempo
+  // The wpSyncLock inside showWpEmbed will prevent any bounce-back
+  showWpEmbed();
+}
 function renderWpLink() { showWpEmbed(); }
 
 window.sendWpChat = function() {

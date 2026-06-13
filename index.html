@@ -169,10 +169,10 @@
             </div>
 
             <div class="wp-controls">
-               <button class="btn btn-sm" onclick="syncWpNow()"><i data-lucide="satellite"></i> Sync Forzado</button>
-               <button class="btn btn-sm" style="background:var(--gold); color:#fff;" onclick="location.reload()"><i data-lucide="refresh-cw"></i> Reset App</button>
+               <button class="wp-btn-ctrl" onclick="takeWpControl()" id="wpTakeCtrlBtn"><i data-lucide="gamepad-2"></i> Tomar Control</button>
+               <button class="btn btn-sm btn-ghost" onclick="syncWpNow()"><i data-lucide="satellite"></i> Sync</button>
                <button class="btn btn-sm btn-ghost" onclick="clearWpLink()"><i data-lucide="trash-2"></i> Eliminar</button>
-               <button class="btn btn-sm btn-ghost" onclick="playNextInQueue()" id="wpNextBtn" style="display:none; margin-left:auto;"><i data-lucide="skip-forward"></i> Siguiente</button>
+               <button class="btn btn-sm btn-ghost" onclick="playNextInQueue()" id="wpNextBtn" style="display:none;"><i data-lucide="skip-forward"></i> Siguiente</button>
                <div class="wp-status" id="wpStatusLabel" style="margin-left:auto;">Controlado por: Nadie</div>
             </div>
 

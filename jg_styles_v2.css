@@ -195,9 +195,11 @@ input[type="checkbox"]:checked::after { transform: translateX(20px); box-shadow:
 .wp-link-display { background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border-radius: 24px; padding: 40px 24px; text-align: center; box-shadow: 0 8px 24px rgba(0,122,255,0.1); border: 2px dashed rgba(0,122,255,0.2); }
 .wp-link-display .wp-big-icon { font-size: 4rem; margin-bottom: 16px; animation: bounce 2s infinite; }
 .wp-link-url { font-size: 0.95rem; font-weight: 600; color: var(--ios-blue); word-break: break-all; margin: 16px 0; }
-.wp-controls { display: flex; gap: 8px; background: rgba(255,255,255,0.8); padding: 12px; border-radius: 16px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
-.wp-status { font-size: 0.8rem; color: var(--text-light); font-weight: 600; margin-left: auto; }
-.chat-box { height: 320px; background: rgba(255,255,255,0.6); border-radius: 20px; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.wp-controls { display:flex; gap:8px; background:rgba(255,255,255,0.8); padding:10px 16px; border-radius:24px; align-items:center; margin-top:16px; flex-wrap:wrap; border:1px solid rgba(0,0,0,0.05); }
+.wp-status { font-size:0.8rem; font-weight:600; padding:8px 14px; border-radius:12px; background:rgba(0,0,0,0.03); display:flex; align-items:center; gap:6px; }
+.wp-btn-ctrl { background:var(--rose); color:#fff; border:none; padding:8px 16px; border-radius:12px; font-weight:700; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:0.3s; animation: pulseControl 2s infinite; }
+@keyframes pulseControl { 0% { box-shadow: 0 0 0 0 rgba(255,75,114,0.4); } 70% { box-shadow: 0 0 0 10px rgba(255,75,114,0); } 100% { box-shadow: 0 0 0 0 rgba(255,75,114,0); } }
+.wp-btn-ctrl:hover { background:var(--rose2); transform:scale(1.05); }
 .msg-bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; color: var(--text-dark); animation: fadeUpSec 0.2s ease; }
 .msg-bubble.me { background: var(--ios-blue); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0,122,255,0.2); }
 .msg-bubble.other { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -343,5 +345,5 @@ input[type="checkbox"]:checked::after { transform: translateX(20px); box-shadow:
   .cal-day { font-size: 0.8rem; }
   .toast { width: 90%; max-width: 340px; text-align: center; }
 }
-@ k e y f r a m e s   p u l s e - h e a r t   {   0 %   {   t r a n s f o r m :   s c a l e ( 1 ) ;   o p a c i t y :   0 . 8 ;   }   5 0 %   {   t r a n s f o r m :   s c a l e ( 1 . 2 ) ;   o p a c i t y :   1 ;   }   1 0 0 %   {   t r a n s f o r m :   s c a l e ( 1 ) ;   o p a c i t y :   0 . 8 ;   }   }   . p u l s e - h e a r t   {   d i s p l a y :   i n l i n e - b l o c k ;   a n i m a t i o n :   p u l s e - h e a r t   1 s   e a s e - i n - o u t   i n f i n i t e ;   c o l o r :   v a r ( - - r o s e 3 ) ;   }  
- 
+@keyframes pulse-heart { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+.pulse-heart { display: inline-block; animation: pulse-heart 1s ease-in-out infinite; color: var(--rose3); }
