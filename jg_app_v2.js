@@ -141,10 +141,26 @@ attachSync((data) => {
       changed = true;
       if (k === 'wp') syncWpPlayerRemotely();
       if (k === 'presence') updatePresenceUI();
+      if (k === 'posts') renderFeed();
+      if (k === 'wp' && State.wp.chat) renderWpChat();
     }
   });
   if(changed && State.me) { refreshUI(); syncGamesRenderer(); }
 });
+
+// WATCH PARTY AGGRESSIVE SYNC
+setInterval(() => {
+  if (State.me && State.wp.type !== 'none' && State.wp.ctrl === (State.me==='J'?'Jhosep':'Gabriela')) {
+     let cTime = 0;
+     if (State.wp.type === 'yt-embed' && ytPlayer && ytPlayer.getCurrentTime) cTime = ytPlayer.getCurrentTime();
+     else if (State.wp.type === 'mp4' && wpVideo) cTime = wpVideo.currentTime;
+     
+     if (cTime > 0 && Math.abs(cTime - State.wp.time) > 2) {
+        State.wp.time = cTime;
+        fbSave('wp', State.wp);
+     }
+  }
+}, 4000); 
 
 function updatePresenceUI() {
   const other = State.me === 'J' ? 'G' : 'J';

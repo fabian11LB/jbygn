@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>J & G — Nuestra Historia</title>
   <!-- Cache busting and icon library -->
-  <link rel="stylesheet" href="jg_styles_v2.css?v=13">
+  <link rel="stylesheet" href="jg_styles_v2.css?v=14">
   <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -164,6 +164,7 @@
 
             <div class="wp-controls">
                <button class="btn btn-sm" onclick="syncWpNow()"><i data-lucide="satellite"></i> Sync Forzado</button>
+               <button class="btn btn-sm" style="background:var(--gold); color:#fff;" onclick="location.reload()"><i data-lucide="refresh-cw"></i> Reset App</button>
                <button class="btn btn-sm btn-ghost" onclick="clearWpLink()"><i data-lucide="trash-2"></i> Eliminar</button>
                <button class="btn btn-sm btn-ghost" onclick="playNextInQueue()" id="wpNextBtn" style="display:none; margin-left:auto;"><i data-lucide="skip-forward"></i> Siguiente</button>
                <div class="wp-status" id="wpStatusLabel" style="margin-left:auto;">Controlado por: Nadie</div>
@@ -515,7 +516,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Lógica principal de JS -->
-<script type="module" src="jg_app_v2.js?v=13"></script>
+<script type="module" src="jg_app_v2.js?v=14"></script>
 <script>
   // Inicialización de Iconos Lucide
   lucide.createIcons();
