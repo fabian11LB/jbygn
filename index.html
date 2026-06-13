@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <title>J & G — Nuestra Historia</title>
   <!-- Cache busting and icon library -->
-  <link rel="stylesheet" href="jg_styles_v2.css?v=23">
+  <link rel="stylesheet" href="jg_styles_v2.css?v=24">
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -62,7 +62,7 @@
     <nav class="sb-nav">
       <div class="sb-section-label" style="font-size:0.65rem; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; padding:16px 16px 8px; font-weight:700;">Principal</div>
       <div class="sb-item active" onclick="go('feed',this)"><i data-lucide="home" class="ic"></i><span class="lb">Inicio</span></div>
-      <div class="sb-item" onclick="go('watchparty',this)"><i data-lucide="film" class="ic"></i><span class="lb">Watch Party</span></div>
+      <div class="sb-item" onclick="go('watchparty',this)"><i data-lucide="film" class="ic"></i><span class="lb">Cine</span></div>
       <div class="sb-item" onclick="go('cuaderno',this)"><i data-lucide="book" class="ic"></i><span class="lb">Cuaderno</span></div>
       <div class="sb-item" onclick="go('album',this)"><i data-lucide="camera" class="ic"></i><span class="lb">100 Citas</span><span class="sb-badge" id="citasBadge">0</span></div>
       
@@ -134,11 +134,11 @@
       </div>
     </div>
 
-    <!-- WATCH PARTY (Embed Directo) -->
+    <!-- CINE (Embed Directo) -->
     <div id="sec-watchparty" class="sec">
       <div class="page-header">
-         <p class="sec-title">Cine J&G</p>
-         <p class="sec-sub">Peguen un link y véanlo juntos acá mismo 🍿</p>
+         <h2 class="sec-title" style="font-size:2.4rem; line-height:0.9;">Nuestro Cine 🍿</h2>
+         <p class="sec-sub">Peguen un link y véanlo juntos acá mismo</p>
       </div>
       <div class="page-container wp-container">
          <div class="wp-link-area">
@@ -518,7 +518,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Lógica principal de JS -->
-<script type="module" src="jg_app_v2.js?v=23"></script>
+<script type="module" src="jg_app_v2.js?v=24"></script>
 <script>
   // Inicialización de Iconos Lucide
   lucide.createIcons();

@@ -1,4 +1,4 @@
-// === MOTOR REALTIME DB MASTER (v23 - MODO MINECRAFT) ===
+// === MOTOR REALTIME DB MASTER (v24 - MODO CINE LIVE) ===
 const firebaseConfig = {
   apiKey: "AIzaSyA0jCUtEa_BBHQUoogvyHfMNDUZJzIj5RY",
   authDomain: "jhosep-gabriela.firebaseapp.com",
