@@ -1,4 +1,4 @@
-// === MOTOR REALTIME DB MASTER (v24 - MODO CINE LIVE) ===
+// === MOTOR REALTIME DB MASTER (v26 - FULL MOBILE CALL) ===
 const firebaseConfig = {
   apiKey: "AIzaSyA0jCUtEa_BBHQUoogvyHfMNDUZJzIj5RY",
   authDomain: "jhosep-gabriela.firebaseapp.com",
@@ -211,11 +211,16 @@ window.toggleJgCall = function() {
       width: '100%',
       height: '100%',
       parentNode: document.getElementById('jgCallIframe'),
-      configOverwrite: { prejoinPageEnabled: false },
+      configOverwrite: { prejoinPageEnabled: false, startWithAudioMuted: false, startWithVideoMuted: false },
       interfaceConfigOverwrite: { TILE_VIEW_MAX_COLUMNS: 2 },
       userInfo: { displayName: State.me === 'J' ? 'Jhosep' : 'Gabriela' }
     };
     jitsiApi = new JitsiMeetExternalAPI(domain, options);
+    // Forzar permisos en el iframe creado por el API
+    setTimeout(() => {
+        const ifr = document.querySelector('#jgCallIframe iframe');
+        if(ifr) ifr.setAttribute('allow', 'camera; microphone; display-capture; autoplay');
+    }, 1000);
     window.scrollTo({ top: container.offsetTop - 100, behavior: 'smooth' });
   } else {
     container.style.display = 'none';
